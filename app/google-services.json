@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1043043837910",
+    "project_id": "itiprojects-aa75f",
+    "storage_bucket": "itiprojects-aa75f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1043043837910:android:6d9f1d8d4c623b72bb6677",
+        "android_client_info": {
+          "package_name": "com.mario.quiz"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAIW3-egIQEBJwD_ElngGLkWmqkrO1RO9k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
