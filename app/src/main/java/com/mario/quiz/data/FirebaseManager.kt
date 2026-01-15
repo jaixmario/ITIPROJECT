@@ -15,26 +15,28 @@ object FirebaseManager {
         usersRef.child(name).setValue(mapOf("name" to name))
     }
 
-    fun saveQuizResult(userName: String, score: Int, totalQuestions: Int) {
+    fun saveQuizResult(userName: String, subject: String, score: Int, totalQuestions: Int, userAnswers: List<String>) {
         val resultsRef = database.getReference("results").child(userName).push()
-        val result = mapOf(
-            "score" to score,
-            "total" to totalQuestions,
-            "timestamp" to System.currentTimeMillis()
+        val result = QuizResult(
+            subject = subject,
+            score = score,
+            total = totalQuestions,
+            timestamp = System.currentTimeMillis(),
+            userAnswers = userAnswers
         )
         resultsRef.setValue(result)
     }
 
-    suspend fun getQuizHistory(userName: String): List<Map<String, Long>> = suspendCoroutine { continuation ->
+    suspend fun getQuizHistory(userName: String): List<QuizResult> = suspendCoroutine { continuation ->
         val resultsRef = database.getReference("results").child(userName)
         resultsRef.orderByChild("timestamp").addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val history = mutableListOf<Map<String, Long>>()
+                val history = mutableListOf<QuizResult>()
                 for (child in snapshot.children) {
-                    val score = child.child("score").getValue(Long::class.java) ?: 0L
-                    val total = child.child("total").getValue(Long::class.java) ?: 0L
-                    val timestamp = child.child("timestamp").getValue(Long::class.java) ?: 0L
-                    history.add(mapOf("score" to score, "total" to total, "timestamp" to timestamp))
+                    val result = child.getValue(QuizResult::class.java)
+                    if (result != null) {
+                        history.add(result)
+                    }
                 }
                 continuation.resume(history.reversed()) // Newest first
             }
