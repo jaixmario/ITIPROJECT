@@ -1,5 +1,6 @@
 package com.mario.quiz.screens
 
+import android.content.Context
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -18,14 +19,12 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,29 +33,34 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.mario.quiz.R
-import com.mario.quiz.data.mockQuestions
+import com.mario.quiz.data.FirebaseManager
+import com.mario.quiz.data.Question
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ResultScreen(navController: NavController, score: Int, userAnswers: List<String>) {
-    val totalQuestions = mockQuestions.size
+fun ResultScreen(navController: NavController, subject: String, score: Int, userAnswers: List<String>) {
+    var questions by remember { mutableStateOf<List<Question>>(emptyList()) }
     var showReviewDialog by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        questions = FirebaseManager.getQuestions(subject)
+        if (score != -1) {
+            val sharedPreferences = context.getSharedPreferences("quiz_app_prefs", Context.MODE_PRIVATE)
+            val userName = sharedPreferences.getString("user_name", "") ?: ""
+            if (questions.isNotEmpty()) {
+                FirebaseManager.saveQuizResult(userName, score, questions.size)
+            }
+        }
+    }
 
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(text = "Result") },
-                navigationIcon = {
-                    IconButton(onClick = { navController.navigate("home") { popUpTo("home") { inclusive = true } } }) {
-                        Icon(painter = painterResource(id = R.drawable.ic_close), contentDescription = "Close")
-                    }
-                }
-            )
+        bottomBar = {
+            BottomNavBar(navController = navController)
         }
     ) {
         if (score == -1) {
@@ -71,12 +75,17 @@ fun ResultScreen(navController: NavController, score: Int, userAnswers: List<Str
                     textAlign = TextAlign.Center
                 )
                 Spacer(modifier = Modifier.height(16.dp))
-                Button(onClick = { navController.navigate("quiz") }) {
-                    Text(text = "Start a Quiz")
+                Button(onClick = { navController.navigate("home") }) {
+                    Text(text = "Choose a Subject")
                 }
             }
+        } else if (questions.isEmpty()) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
         } else {
-            val progress by animateFloatAsState(targetValue = score.toFloat() / totalQuestions.toFloat())
+            val totalQuestions = questions.size
+            val progress by animateFloatAsState(targetValue = score.toFloat() / totalQuestions.toFloat(), label = "")
 
             Column(
                 modifier = Modifier.fillMaxSize().padding(it).padding(16.dp),
@@ -85,7 +94,7 @@ fun ResultScreen(navController: NavController, score: Int, userAnswers: List<Str
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     CircularProgressIndicator(
-                        progress = progress,
+                        progress = { progress },
                         modifier = Modifier.size(200.dp),
                         strokeWidth = 16.dp,
                         color = MaterialTheme.colorScheme.primary,
@@ -104,7 +113,7 @@ fun ResultScreen(navController: NavController, score: Int, userAnswers: List<Str
                     Text(text = "Review Answers")
                 }
                 Spacer(modifier = Modifier.height(16.dp))
-                Button(onClick = { navController.navigate("quiz") }) {
+                Button(onClick = { navController.navigate("quiz/$subject") }) {
                     Text(text = "Retry Test")
                 }
                 Spacer(modifier = Modifier.height(16.dp))
@@ -121,7 +130,7 @@ fun ResultScreen(navController: NavController, score: Int, userAnswers: List<Str
             title = { Text(text = "Review Answers") },
             text = {
                 LazyColumn {
-                    itemsIndexed(mockQuestions) { index, question ->
+                    itemsIndexed(questions) { index, question ->
                         val userAnswer = userAnswers.getOrNull(index)
                         val isCorrect = userAnswer == question.answer
                         val backgroundColor = if (isCorrect) Color.Green.copy(alpha = 0.3f) else Color.Red.copy(alpha = 0.3f)
@@ -135,9 +144,11 @@ fun ResultScreen(navController: NavController, score: Int, userAnswers: List<Str
                                 .padding(16.dp)
                         ) {
                             Text(text = "Question ${index + 1}: ${question.question}", style = MaterialTheme.typography.bodyMedium)
-                            Text(text = "Your answer: $userAnswer", style = MaterialTheme.typography.bodySmall)
+                            val userAnswerText = question.options[userAnswer] ?: "No answer"
+                            Text(text = "Your answer: $userAnswerText", style = MaterialTheme.typography.bodySmall)
                             if (!isCorrect) {
-                                Text(text = "Correct answer: ${question.answer}", style = MaterialTheme.typography.bodySmall)
+                                val correctAnswerText = question.options[question.answer] ?: ""
+                                Text(text = "Correct answer: $correctAnswerText", style = MaterialTheme.typography.bodySmall)
                             }
                         }
                     }

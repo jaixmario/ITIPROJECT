@@ -18,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,11 +27,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.mario.quiz.data.FirebaseManager
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddNameScreen(navController: NavController) {
     var name by remember { mutableStateOf(TextFieldValue("")) }
+    val scope = rememberCoroutineScope()
     val context = LocalContext.current
 
     Box(
@@ -68,18 +72,24 @@ fun AddNameScreen(navController: NavController) {
                 onValueChange = { name = it },
                 label = { Text("Enter your name") },
                 singleLine = true
-                // The problematic 'colors' parameter has been removed to fix the build.
             )
             Spacer(modifier = Modifier.height(32.dp))
             Button(
                 onClick = {
                     if (name.text.isNotBlank()) {
-                        val sharedPreferences = context.getSharedPreferences("quiz_app_prefs", Context.MODE_PRIVATE)
-                        with(sharedPreferences.edit()) {
-                            putString("user_name", name.text)
-                            apply()
+                        scope.launch {
+                            // Save to Firebase
+                            FirebaseManager.saveUserName(name.text)
+
+                            // Save to SharedPreferences
+                            val sharedPreferences = context.getSharedPreferences("quiz_app_prefs", Context.MODE_PRIVATE)
+                            with(sharedPreferences.edit()) {
+                                putString("user_name", name.text)
+                                apply()
+                            }
+
+                            navController.navigate("home") { popUpTo("add_name") { inclusive = true } }
                         }
-                        navController.navigate("home") { popUpTo("add_name") { inclusive = true } }
                     }
                 },
                 enabled = name.text.isNotBlank()

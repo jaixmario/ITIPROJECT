@@ -21,23 +21,25 @@ fun QuizNavigation() {
         composable("splash") { SplashScreen(navController = navController) }
         composable("add_name") { AddNameScreen(navController = navController) }
         composable("home") { HomeScreen(navController = navController) }
-        composable("quiz") { QuizScreen(navController = navController) }
         composable(
-            "result?score={score}&userAnswers={userAnswers}",
+            "quiz/{subject}",
+            arguments = listOf(navArgument("subject") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val subject = backStackEntry.arguments?.getString("subject") ?: ""
+            QuizScreen(navController = navController, subject = subject)
+        }
+        composable(
+            "result/{subject}/{score}/{userAnswers}",
             arguments = listOf(
-                navArgument("score") { 
-                    type = NavType.IntType
-                    defaultValue = -1
-                },
-                navArgument("userAnswers") { 
-                    type = NavType.StringType
-                    nullable = true
-                }
+                navArgument("subject") { type = NavType.StringType },
+                navArgument("score") { type = NavType.IntType },
+                navArgument("userAnswers") { type = NavType.StringType }
             )
         ) { backStackEntry ->
-            val score = backStackEntry.arguments?.getInt("score") ?: -1
+            val subject = backStackEntry.arguments?.getString("subject") ?: ""
+            val score = backStackEntry.arguments?.getInt("score") ?: 0
             val userAnswers = backStackEntry.arguments?.getString("userAnswers")?.split(",") ?: emptyList()
-            ResultScreen(navController = navController, score = score, userAnswers = userAnswers)
+            ResultScreen(navController = navController, subject = subject, score = score, userAnswers = userAnswers)
         }
         composable("profile") { ProfileScreen(navController = navController) }
     }
