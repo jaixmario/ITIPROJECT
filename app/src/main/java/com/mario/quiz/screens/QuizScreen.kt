@@ -3,6 +3,7 @@ package com.mario.quiz.screens
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -28,6 +30,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.mario.quiz.data.FirebaseManager
@@ -35,15 +38,17 @@ import com.mario.quiz.data.Question
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun QuizScreen(navController: NavController, subject: String) {
+fun QuizScreen(navController: NavController, subject: String?) {
     var questions by remember { mutableStateOf<List<Question>>(emptyList()) }
     var currentQuestionIndex by remember { mutableStateOf(0) }
     var selectedOption by remember { mutableStateOf("") }
     var score by remember { mutableStateOf(0) }
     val userAnswers = remember { mutableListOf<String>() }
 
-    LaunchedEffect(Unit) {
-        questions = FirebaseManager.getQuestions(subject)
+    LaunchedEffect(subject) {
+        if (subject != null) {
+            questions = FirebaseManager.getQuestions(subject)
+        }
     }
 
     Scaffold(
@@ -51,7 +56,23 @@ fun QuizScreen(navController: NavController, subject: String) {
             BottomNavBar(navController = navController)
         }
     ) {
-        if (questions.isEmpty()) {
+        if (subject == null) {
+            Column(
+                modifier = Modifier.fillMaxSize().padding(it).padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = "Please select a subject first.",
+                    style = MaterialTheme.typography.titleLarge,
+                    textAlign = TextAlign.Center
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(onClick = { navController.navigate("home") }) {
+                    Text(text = "Choose a Subject")
+                }
+            }
+        } else if (questions.isEmpty()) {
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
@@ -100,7 +121,7 @@ fun QuizScreen(navController: NavController, subject: String) {
                                 currentQuestionIndex++
                                 selectedOption = ""
                             } else {
-                                navController.navigate("result/$subject/$score/${userAnswers.joinToString(",")}")
+                                navController.navigate("result?subject=$subject&score=$score&userAnswers=${userAnswers.joinToString(",")}")
                             }
                         }
                     )

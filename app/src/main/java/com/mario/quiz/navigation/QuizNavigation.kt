@@ -22,22 +22,36 @@ fun QuizNavigation() {
         composable("add_name") { AddNameScreen(navController = navController) }
         composable("home") { HomeScreen(navController = navController) }
         composable(
-            "quiz/{subject}",
-            arguments = listOf(navArgument("subject") { type = NavType.StringType })
+            route = "quiz?subject={subject}",
+            arguments = listOf(
+                navArgument("subject") {
+                    type = NavType.StringType
+                    nullable = true
+                }
+            )
         ) { backStackEntry ->
-            val subject = backStackEntry.arguments?.getString("subject") ?: ""
+            val subject = backStackEntry.arguments?.getString("subject")
             QuizScreen(navController = navController, subject = subject)
         }
         composable(
-            "result/{subject}/{score}/{userAnswers}",
+            route = "result?subject={subject}&score={score}&userAnswers={userAnswers}",
             arguments = listOf(
-                navArgument("subject") { type = NavType.StringType },
-                navArgument("score") { type = NavType.IntType },
-                navArgument("userAnswers") { type = NavType.StringType }
+                navArgument("subject") { 
+                    type = NavType.StringType
+                    nullable = true
+                },
+                navArgument("score") { 
+                    type = NavType.IntType
+                    defaultValue = -1
+                },
+                navArgument("userAnswers") { 
+                    type = NavType.StringType
+                    nullable = true
+                }
             )
         ) { backStackEntry ->
-            val subject = backStackEntry.arguments?.getString("subject") ?: ""
-            val score = backStackEntry.arguments?.getInt("score") ?: 0
+            val subject = backStackEntry.arguments?.getString("subject")
+            val score = backStackEntry.arguments?.getInt("score") ?: -1
             val userAnswers = backStackEntry.arguments?.getString("userAnswers")?.split(",") ?: emptyList()
             ResultScreen(navController = navController, subject = subject, score = score, userAnswers = userAnswers)
         }

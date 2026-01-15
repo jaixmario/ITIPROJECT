@@ -77,7 +77,7 @@ fun HomeScreen(navController: NavController) {
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(vertical = 4.dp)
-                                .clickable { navController.navigate("quiz/$subject") },
+                                .clickable { navController.navigate("quiz?subject=$subject") },
                             elevation = CardDefaults.cardElevation(2.dp)
                         ) {
                             Text(

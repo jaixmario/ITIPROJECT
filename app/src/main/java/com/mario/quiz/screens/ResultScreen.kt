@@ -42,13 +42,15 @@ import com.mario.quiz.data.Question
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ResultScreen(navController: NavController, subject: String, score: Int, userAnswers: List<String>) {
+fun ResultScreen(navController: NavController, subject: String?, score: Int, userAnswers: List<String>) {
     var questions by remember { mutableStateOf<List<Question>>(emptyList()) }
     var showReviewDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
-    LaunchedEffect(Unit) {
-        questions = FirebaseManager.getQuestions(subject)
+    LaunchedEffect(subject) {
+        if (subject != null) {
+            questions = FirebaseManager.getQuestions(subject)
+        }
         if (score != -1) {
             val sharedPreferences = context.getSharedPreferences("quiz_app_prefs", Context.MODE_PRIVATE)
             val userName = sharedPreferences.getString("user_name", "") ?: ""
@@ -63,14 +65,14 @@ fun ResultScreen(navController: NavController, subject: String, score: Int, user
             BottomNavBar(navController = navController)
         }
     ) {
-        if (score == -1) {
+        if (subject == null || score == -1) {
             Column(
                 modifier = Modifier.fillMaxSize().padding(it).padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
                 Text(
-                    text = "You haven't completed a quiz yet.",
+                    text = "You haven\'t completed a quiz yet.",
                     style = MaterialTheme.typography.titleLarge,
                     textAlign = TextAlign.Center
                 )
@@ -113,7 +115,7 @@ fun ResultScreen(navController: NavController, subject: String, score: Int, user
                     Text(text = "Review Answers")
                 }
                 Spacer(modifier = Modifier.height(16.dp))
-                Button(onClick = { navController.navigate("quiz/$subject") }) {
+                Button(onClick = { navController.navigate("quiz?subject=$subject") }) {
                     Text(text = "Retry Test")
                 }
                 Spacer(modifier = Modifier.height(16.dp))
