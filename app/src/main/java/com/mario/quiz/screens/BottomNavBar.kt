@@ -3,7 +3,6 @@ package com.mario.quiz.screens
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -19,7 +18,6 @@ import com.mario.quiz.navigation.BottomNavItem
 fun BottomNavBar(navController: NavController) {
     val bottomNavItems = listOf(
         BottomNavItem("Home", "home", Icons.Default.Home),
-        BottomNavItem("Quiz", "quiz", Icons.Default.List),
         BottomNavItem("Results", "results", Icons.Default.Star),
         BottomNavItem("Profile", "profile", Icons.Default.AccountCircle)
     )
