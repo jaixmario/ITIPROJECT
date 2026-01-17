@@ -30,7 +30,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.mario.quiz.data.FirebaseManager
 import com.mario.quiz.data.LocalDataManager
 import com.mario.quiz.data.QuizResult
 import java.text.SimpleDateFormat
@@ -41,6 +40,7 @@ import java.util.Locale
 @Composable
 fun ResultScreen(navController: NavController, subject: String?, score: Int, userAnswers: List<String>) {
     val context = LocalContext.current
+    val localDataManager = remember { LocalDataManager(context) }
     val sharedPreferences = remember { context.getSharedPreferences("quiz_app_prefs", Context.MODE_PRIVATE) }
     val userName = remember { sharedPreferences.getString("user_name", "") }
     var quizHistory by remember { mutableStateOf<List<QuizResult>>(emptyList()) }
@@ -52,15 +52,15 @@ fun ResultScreen(navController: NavController, subject: String?, score: Int, use
 
             // First, save the new result if one was just completed
             if (subject != null && score != -1) {
-                val localDataManager = LocalDataManager(context)
                 val questions = localDataManager.getQuestions(subject)
                 if (questions.isNotEmpty()) {
-                    FirebaseManager.saveQuizResult(userName, subject, score, questions.size, userAnswers)
+                    val newResult = QuizResult(subject, score, questions.size, System.currentTimeMillis(), userAnswers)
+                    localDataManager.saveQuizResult(userName, newResult)
                 }
             }
 
-            // Then, fetch the complete history
-            quizHistory = FirebaseManager.getQuizHistory(userName)
+            // Then, fetch the complete history from local storage
+            quizHistory = localDataManager.getQuizHistory(userName)
             isLoading = false
         }
     }
@@ -83,7 +83,7 @@ fun ResultScreen(navController: NavController, subject: String?, score: Int, use
             if (isLoading) {
                 CircularProgressIndicator()
             } else if (quizHistory.isEmpty()) {
-                Text("You haven't completed any quizzes yet.")
+                Text("You haven\'t completed any quizzes yet.")
             } else {
                 LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     items(quizHistory) { result ->

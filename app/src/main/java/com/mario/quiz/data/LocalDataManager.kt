@@ -33,4 +33,17 @@ class LocalDataManager(context: Context) {
         val map: Map<String, Map<String, Question>> = gson.fromJson(json, type)
         return map[subject]?.values?.toList() ?: emptyList()
     }
+
+    fun saveQuizResult(userName: String, result: QuizResult) {
+        val history = getQuizHistory(userName).toMutableList()
+        history.add(0, result) // Add new result to the top
+        val json = gson.toJson(history)
+        sharedPreferences.edit().putString("quiz_history_$userName", json).apply()
+    }
+
+    fun getQuizHistory(userName: String): List<QuizResult> {
+        val json = sharedPreferences.getString("quiz_history_$userName", null) ?: return emptyList()
+        val type = object : TypeToken<List<QuizResult>>() {}.type
+        return gson.fromJson(json, type) ?: emptyList()
+    }
 }

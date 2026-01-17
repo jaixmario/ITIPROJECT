@@ -1,6 +1,7 @@
 package com.mario.quiz.screens
 
 import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -20,6 +21,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.mario.quiz.R
+import com.mario.quiz.data.LocalDataManager
+import com.mario.quiz.data.fetchUpdateInfo
 import kotlinx.coroutines.delay
 
 @Composable
@@ -27,6 +30,16 @@ fun SplashScreen(navController: NavController) {
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
+        val localDataManager = LocalDataManager(context)
+        val updateInfo = fetchUpdateInfo()
+
+        if (updateInfo != null) {
+            val localVersion = localDataManager.getDbVersion()
+            if (updateInfo.database.version != localVersion) {
+                Toast.makeText(context, updateInfo.database.message, Toast.LENGTH_LONG).show()
+            }
+        }
+
         // A short delay for branding purposes.
         delay(1500L)
 
