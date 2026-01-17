@@ -17,16 +17,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Computer
-import androidx.compose.material.icons.filled.Language
-import androidx.compose.material.icons.filled.Quiz
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -38,12 +34,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.mario.quiz.data.LocalDataManager
 
@@ -53,12 +50,12 @@ fun HomeScreen(navController: NavController) {
     val context = LocalContext.current
     val sharedPreferences = remember { context.getSharedPreferences("quiz_app_prefs", Context.MODE_PRIVATE) }
     val userName = remember { sharedPreferences.getString("user_name", "Student") }
-    var subjects by remember { mutableStateOf<List<String>>(emptyList()) }
+    var subjectsWithCounts by remember { mutableStateOf<Map<String, Int>>(emptyMap()) }
     var isLoading by remember { mutableStateOf(true) }
     val localDataManager = remember { LocalDataManager(context) }
 
     LaunchedEffect(Unit) {
-        subjects = localDataManager.getSubjects()
+        subjectsWithCounts = localDataManager.getSubjectsWithCounts()
         isLoading = false
     }
 
@@ -92,7 +89,7 @@ fun HomeScreen(navController: NavController) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator()
                 }
-            } else if (subjects.isEmpty()) {
+            } else if (subjectsWithCounts.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text("No subjects found. Try updating the database from your profile.")
                 }
@@ -103,8 +100,8 @@ fun HomeScreen(navController: NavController) {
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    items(subjects) { subject ->
-                        SubjectCard(subject = subject) {
+                    items(subjectsWithCounts.toList()) { (subject, count) ->
+                        SubjectCard(subject = subject, questionCount = count) {
                             navController.navigate("quiz?subject=$subject")
                         }
                     }
@@ -115,8 +112,8 @@ fun HomeScreen(navController: NavController) {
 }
 
 @Composable
-fun SubjectCard(subject: String, onClick: () -> Unit) {
-    val (icon, gradient) = getSubjectVisuals(subject)
+fun SubjectCard(subject: String, questionCount: Int, onClick: () -> Unit) {
+    val gradient = getSubjectGradient(subject)
 
     Card(
         modifier = Modifier
@@ -137,7 +134,21 @@ fun SubjectCard(subject: String, onClick: () -> Unit) {
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Icon(imageVector = icon, contentDescription = subject, tint = Color.White, modifier = Modifier.size(48.dp))
+                // Letter Avatar
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(CircleShape)
+                        .background(Color.White.copy(alpha = 0.2f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = subject.first().uppercase(),
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                }
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
                     text = subject.replaceFirstChar { it.uppercase() },
@@ -145,17 +156,21 @@ fun SubjectCard(subject: String, onClick: () -> Unit) {
                     fontWeight = FontWeight.Bold,
                     color = Color.White
                 )
+                Text(
+                    text = "$questionCount Questions",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.White.copy(alpha = 0.8f)
+                )
             }
         }
     }
 }
 
-// Helper to get a unique icon and gradient for each subject
-private fun getSubjectVisuals(subject: String): Pair<ImageVector, Brush> {
-    return when (subject.lowercase()) {
-        "computer" -> Icons.Default.Computer to Brush.horizontalGradient(listOf(Color(0xFF4C63D2), Color(0xFF7289DA)))
-        "english" -> Icons.Default.Language to Brush.horizontalGradient(listOf(Color(0xFFD24C4C), Color(0xFFDA7272)))
-        // Add more subjects here
-        else -> Icons.Default.Quiz to Brush.horizontalGradient(listOf(Color(0xFF4C94D2), Color(0xFF72B5DA)))
-    }
+// Helper to get a unique gradient for each subject
+private fun getSubjectGradient(subject: String): Brush {
+    // Simple hash to get a consistent color for each subject
+    val hash = subject.hashCode()
+    val color1 = Color(hash or 0xFF000000.toInt()).copy(alpha = 1f)
+    val color2 = Color(hash * 2 or 0xFF000000.toInt()).copy(alpha = 1f)
+    return Brush.horizontalGradient(listOf(color1.copy(alpha=0.7f), color2.copy(alpha=0.9f)))
 }

@@ -20,11 +20,11 @@ class LocalDataManager(context: Context) {
         sharedPreferences.edit().putString("subjects_data", data).apply()
     }
 
-    fun getSubjects(): List<String> {
-        val json = sharedPreferences.getString("subjects_data", null) ?: return emptyList()
-        val type = object : TypeToken<Map<String, Any>>() {}.type
-        val map: Map<String, Any> = gson.fromJson(json, type)
-        return map.keys.toList()
+    fun getSubjectsWithCounts(): Map<String, Int> {
+        val json = sharedPreferences.getString("subjects_data", null) ?: return emptyMap()
+        val type = object : TypeToken<Map<String, Map<String, Any>>>() {}.type
+        val map: Map<String, Map<String, Any>> = gson.fromJson(json, type)
+        return map.mapValues { it.value.size }
     }
 
     fun getQuestions(subject: String): List<Question> {
