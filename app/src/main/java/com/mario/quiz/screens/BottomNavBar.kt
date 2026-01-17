@@ -20,7 +20,7 @@ fun BottomNavBar(navController: NavController) {
     val bottomNavItems = listOf(
         BottomNavItem("Home", "home", Icons.Default.Home),
         BottomNavItem("Quiz", "quiz", Icons.Default.List),
-        BottomNavItem("Results", "result", Icons.Default.Star),
+        BottomNavItem("Results", "results", Icons.Default.Star),
         BottomNavItem("Profile", "profile", Icons.Default.AccountCircle)
     )
     val navBackStackEntry by navController.currentBackStackEntryAsState()

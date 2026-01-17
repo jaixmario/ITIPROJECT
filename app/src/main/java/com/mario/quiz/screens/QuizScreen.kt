@@ -124,7 +124,7 @@ fun QuizScreen(navController: NavController, subject: String?) {
                                 currentQuestionIndex++
                                 selectedOption = ""
                             } else {
-                                navController.navigate("result?subject=$subject&score=$score&userAnswers=${userAnswers.joinToString(",")}")
+                                navController.navigate("quiz_result?subject=$subject&score=$score&userAnswers=${userAnswers.joinToString(",")}")
                             }
                         }
                     )

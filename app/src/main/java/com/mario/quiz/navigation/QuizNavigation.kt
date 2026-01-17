@@ -7,10 +7,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.mario.quiz.screens.AddNameScreen
+import com.mario.quiz.screens.HistoryScreen
 import com.mario.quiz.screens.HomeScreen
 import com.mario.quiz.screens.ProfileScreen
+import com.mario.quiz.screens.QuizResultScreen
 import com.mario.quiz.screens.QuizScreen
-import com.mario.quiz.screens.ResultScreen
 import com.mario.quiz.screens.SplashScreen
 
 @Composable
@@ -34,27 +35,19 @@ fun QuizNavigation() {
             QuizScreen(navController = navController, subject = subject)
         }
         composable(
-            route = "result?subject={subject}&score={score}&userAnswers={userAnswers}",
+            route = "quiz_result?subject={subject}&score={score}&userAnswers={userAnswers}",
             arguments = listOf(
-                navArgument("subject") { 
-                    type = NavType.StringType
-                    nullable = true
-                },
-                navArgument("score") { 
-                    type = NavType.IntType
-                    defaultValue = -1
-                },
-                navArgument("userAnswers") { 
-                    type = NavType.StringType
-                    nullable = true
-                }
+                navArgument("subject") { type = NavType.StringType; nullable = true },
+                navArgument("score") { type = NavType.IntType; defaultValue = -1 },
+                navArgument("userAnswers") { type = NavType.StringType; nullable = true }
             )
         ) { backStackEntry ->
             val subject = backStackEntry.arguments?.getString("subject")
             val score = backStackEntry.arguments?.getInt("score") ?: -1
             val userAnswers = backStackEntry.arguments?.getString("userAnswers")?.split(",") ?: emptyList()
-            ResultScreen(navController = navController, subject = subject, score = score, userAnswers = userAnswers)
+            QuizResultScreen(navController = navController, subject = subject, score = score, userAnswers = userAnswers)
         }
+        composable("results") { HistoryScreen(navController = navController) }
         composable("profile") { ProfileScreen(navController = navController) }
     }
 }
