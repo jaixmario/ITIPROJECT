@@ -19,6 +19,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -27,6 +28,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -65,11 +67,9 @@ fun ProfileScreen(navController: NavController) {
     val scope = rememberCoroutineScope()
 
     var selectedAvatar by remember { mutableStateOf(sharedPreferences.getInt("user_avatar", R.drawable.avatar_default)) }
+    var showAvatarDialog by remember { mutableStateOf(false) }
 
-    val avatars = listOf(
-        R.drawable.avatar_default,
-        R.drawable.avatar01
-    )
+    val avatars = listOf(R.drawable.avatar_default, R.drawable.avatar01)
 
     LaunchedEffect(userName) {
         if (!userName.isNullOrBlank() && userName != "Student") {
@@ -101,7 +101,11 @@ fun ProfileScreen(navController: NavController) {
                 painter = painterResource(id = selectedAvatar),
                 contentDescription = "User Avatar",
                 contentScale = ContentScale.Crop,
-                modifier = Modifier.size(120.dp).clip(CircleShape).border(3.dp, MaterialTheme.colorScheme.primary, CircleShape)
+                modifier = Modifier
+                    .size(120.dp)
+                    .clip(CircleShape)
+                    .border(3.dp, MaterialTheme.colorScheme.primary, CircleShape)
+                    .clickable { showAvatarDialog = true }
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text(text = userName ?: "Student", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
@@ -155,6 +159,54 @@ fun ProfileScreen(navController: NavController) {
             }
         }
     }
+
+    if (showAvatarDialog) {
+        AvatarPickerDialog(
+            avatars = avatars,
+            onDismiss = { showAvatarDialog = false },
+            onAvatarSelected = {
+                selectedAvatar = it
+                with(sharedPreferences.edit()) {
+                    putInt("user_avatar", it)
+                    apply()
+                }
+                showAvatarDialog = false
+            }
+        )
+    }
+}
+
+@Composable
+fun AvatarPickerDialog(avatars: List<Int>, onDismiss: () -> Unit, onAvatarSelected: (Int) -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(text = "Choose Your Avatar") },
+        text = {
+            LazyVerticalGrid(
+                columns = GridCells.Adaptive(minSize = 80.dp),
+                contentPadding = PaddingValues(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(avatars) { avatarResId ->
+                    Image(
+                        painter = painterResource(id = avatarResId),
+                        contentDescription = "Avatar Option",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .size(72.dp)
+                            .clip(CircleShape)
+                            .clickable { onAvatarSelected(avatarResId) }
+                            .padding(4.dp)
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
 }
 
 @Composable
