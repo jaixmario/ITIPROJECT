@@ -27,7 +27,10 @@ fun SplashScreen(navController: NavController) {
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
-        delay(3000)
+        // A short delay for branding purposes.
+        delay(1500L)
+
+        // Proceed to the appropriate screen.
         val sharedPreferences = context.getSharedPreferences("quiz_app_prefs", Context.MODE_PRIVATE)
         val userName = sharedPreferences.getString("user_name", null)
 

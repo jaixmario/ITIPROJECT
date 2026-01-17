@@ -31,6 +31,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.mario.quiz.data.FirebaseManager
+import com.mario.quiz.data.LocalDataManager
 import com.mario.quiz.data.QuizResult
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -51,7 +52,8 @@ fun ResultScreen(navController: NavController, subject: String?, score: Int, use
 
             // First, save the new result if one was just completed
             if (subject != null && score != -1) {
-                val questions = FirebaseManager.getQuestions(subject)
+                val localDataManager = LocalDataManager(context)
+                val questions = localDataManager.getQuestions(subject)
                 if (questions.isNotEmpty()) {
                     FirebaseManager.saveQuizResult(userName, subject, score, questions.size, userAnswers)
                 }

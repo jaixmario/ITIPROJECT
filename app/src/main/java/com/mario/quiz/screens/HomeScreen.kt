@@ -29,7 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.mario.quiz.data.FirebaseManager
+import com.mario.quiz.data.LocalDataManager
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -38,9 +38,10 @@ fun HomeScreen(navController: NavController) {
     val sharedPreferences = remember { context.getSharedPreferences("quiz_app_prefs", Context.MODE_PRIVATE) }
     val userName = remember { sharedPreferences.getString("user_name", "Student") }
     var subjects by remember { mutableStateOf<List<String>>(emptyList()) }
+    val localDataManager = remember { LocalDataManager(context) }
 
     LaunchedEffect(Unit) {
-        subjects = FirebaseManager.getSubjects()
+        subjects = localDataManager.getSubjects()
     }
 
     Scaffold(

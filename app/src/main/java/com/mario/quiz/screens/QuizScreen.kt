@@ -30,10 +30,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.mario.quiz.data.FirebaseManager
+import com.mario.quiz.data.LocalDataManager
 import com.mario.quiz.data.Question
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -44,10 +45,12 @@ fun QuizScreen(navController: NavController, subject: String?) {
     var selectedOption by remember { mutableStateOf("") }
     var score by remember { mutableStateOf(0) }
     val userAnswers = remember { mutableListOf<String>() }
+    val context = LocalContext.current
+    val localDataManager = remember { LocalDataManager(context) }
 
     LaunchedEffect(subject) {
         if (subject != null) {
-            questions = FirebaseManager.getQuestions(subject)
+            questions = localDataManager.getQuestions(subject)
         }
     }
 

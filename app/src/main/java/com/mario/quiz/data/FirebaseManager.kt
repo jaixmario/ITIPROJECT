@@ -15,7 +15,7 @@ object FirebaseManager {
         usersRef.child(name).setValue(mapOf("name" to name))
     }
 
-    fun saveQuizResult(userName: String, subject: String, score: Int, totalQuestions: Int, userAnswers: List<String>) {
+    suspend fun saveQuizResult(userName: String, subject: String, score: Int, totalQuestions: Int, userAnswers: List<String>): Unit = suspendCoroutine { continuation ->
         val resultsRef = database.getReference("results").child(userName).push()
         val result = QuizResult(
             subject = subject,
@@ -25,6 +25,8 @@ object FirebaseManager {
             userAnswers = userAnswers
         )
         resultsRef.setValue(result)
+            .addOnSuccessListener { continuation.resume(Unit) }
+            .addOnFailureListener { continuation.resume(Unit) } // Resume anyway to not block the app
     }
 
     suspend fun getQuizHistory(userName: String): List<QuizResult> = suspendCoroutine { continuation ->
@@ -47,39 +49,28 @@ object FirebaseManager {
         })
     }
 
-    suspend fun getSubjects(): List<String> = suspendCoroutine { continuation ->
-        val subjectsRef = database.getReference("subjects")
-        subjectsRef.addListenerForSingleValueEvent(object : ValueEventListener {
+    suspend fun getDbVersion(): String? = suspendCoroutine { continuation ->
+        val versionRef = database.getReference("db_version")
+        versionRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val subjects = mutableListOf<String>()
-                for (childSnapshot in snapshot.children) {
-                    childSnapshot.key?.let { subjects.add(it) }
-                }
-                continuation.resume(subjects)
+                continuation.resume(snapshot.getValue(String::class.java))
             }
 
             override fun onCancelled(error: DatabaseError) {
-                continuation.resume(emptyList())
+                continuation.resume(null)
             }
         })
     }
 
-    suspend fun getQuestions(subject: String): List<Question> = suspendCoroutine { continuation ->
-        val questionsRef = database.getReference("subjects").child(subject)
-        questionsRef.addListenerForSingleValueEvent(object : ValueEventListener {
+    suspend fun getSubjectsData(): DataSnapshot? = suspendCoroutine { continuation ->
+        val subjectsRef = database.getReference("subjects")
+        subjectsRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val questions = mutableListOf<Question>()
-                for (childSnapshot in snapshot.children) {
-                    val question = childSnapshot.getValue(Question::class.java)
-                    if (question != null) {
-                        questions.add(question)
-                    }
-                }
-                continuation.resume(questions)
+                continuation.resume(snapshot)
             }
 
             override fun onCancelled(error: DatabaseError) {
-                continuation.resume(emptyList())
+                continuation.resume(null)
             }
         })
     }
