@@ -24,6 +24,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
@@ -181,11 +182,11 @@ fun SelectableAnswerOption(
         !answerRevealed && isSelected -> MaterialTheme.colorScheme.primary
         answerRevealed && isCorrect -> correctColor
         answerRevealed && isSelected && !isCorrect -> incorrectColor
-        else -> MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
+        else -> MaterialTheme.colorScheme.outline.copy(alpha = 0.3f) // More subtle default border
     }
 
     val targetBackgroundColor = when {
-        !answerRevealed && isSelected -> MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+        !answerRevealed && isSelected -> MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
         answerRevealed && isCorrect -> correctColor.copy(alpha = 0.1f)
         answerRevealed && isSelected && !isCorrect -> incorrectColor.copy(alpha = 0.1f)
         else -> MaterialTheme.colorScheme.surface
@@ -197,7 +198,7 @@ fun SelectableAnswerOption(
     OutlinedCard(
         modifier = Modifier.fillMaxWidth().clickable(onClick = onOptionSelected),
         shape = RoundedCornerShape(12.dp),
-        border = BorderStroke(if (isSelected || answerRevealed) 2.dp else 1.dp, borderColor),
+        border = BorderStroke(1.5.dp, borderColor), // Corrected: Consistent border width
         colors = CardDefaults.cardColors(containerColor = backgroundColor),
         elevation = CardDefaults.cardElevation(defaultElevation = if (isSelected) 4.dp else 1.dp)
     ) {
@@ -212,7 +213,7 @@ fun SelectableAnswerOption(
                 if (isCorrect) {
                     Icon(Icons.Filled.CheckCircle, contentDescription = "Correct", tint = correctColor, modifier = Modifier.size(24.dp))
                 } else if (isSelected) {
-                    Icon(Icons.Filled.Close, contentDescription = "Incorrect", tint = incorrectColor, modifier = Modifier.size(24.dp)) // Corrected Icon
+                    Icon(Icons.Filled.Close, contentDescription = "Incorrect", tint = incorrectColor, modifier = Modifier.size(24.dp))
                 }
             }
         }
