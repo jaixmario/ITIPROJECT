@@ -6,6 +6,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -69,7 +70,11 @@ fun ProfileScreen(navController: NavController) {
     var selectedAvatar by remember { mutableStateOf(sharedPreferences.getInt("user_avatar", R.drawable.avatar_default)) }
     var showAvatarDialog by remember { mutableStateOf(false) }
 
-    val avatars = listOf(R.drawable.avatar_default, R.drawable.avatar01)
+    val avatars = listOf(
+        R.drawable.avatar_default, R.drawable.avatar01, R.drawable.avatar03,
+        R.drawable.avatar04, R.drawable.avatar05, R.drawable.avatar06,
+        R.drawable.avatar07, R.drawable.avatar08, R.drawable.avatar09
+    )
 
     LaunchedEffect(userName) {
         if (!userName.isNullOrBlank() && userName != "Student") {
@@ -86,9 +91,7 @@ fun ProfileScreen(navController: NavController) {
     val bestScore = quizHistory.maxByOrNull { it.score }?.score ?: 0
 
     Scaffold(
-        bottomBar = {
-            BottomNavBar(navController = navController)
-        }
+        bottomBar = { BottomNavBar(navController = navController) }
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -100,7 +103,7 @@ fun ProfileScreen(navController: NavController) {
             Image(
                 painter = painterResource(id = selectedAvatar),
                 contentDescription = "User Avatar",
-                contentScale = ContentScale.Crop,
+                contentScale = ContentScale.Fit, // Corrected to Fit
                 modifier = Modifier
                     .size(120.dp)
                     .clip(CircleShape)
@@ -135,7 +138,6 @@ fun ProfileScreen(navController: NavController) {
                                 localDataManager.saveSubjectsData(json)
                                 localDataManager.saveDbVersion(remoteDbVersion)
                                 dbVersion = remoteDbVersion // Update the UI
-                                // Restart the app to apply changes
                                 activity?.recreate()
                             }
                         }
@@ -182,22 +184,24 @@ fun AvatarPickerDialog(avatars: List<Int>, onDismiss: () -> Unit, onAvatarSelect
         onDismissRequest = onDismiss,
         title = { Text(text = "Choose Your Avatar") },
         text = {
-            LazyVerticalGrid(
-                columns = GridCells.Adaptive(minSize = 80.dp),
-                contentPadding = PaddingValues(8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(avatars) { avatarResId ->
-                    Image(
-                        painter = painterResource(id = avatarResId),
-                        contentDescription = "Avatar Option",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .size(72.dp)
-                            .clip(CircleShape)
-                            .clickable { onAvatarSelected(avatarResId) }
-                            .padding(4.dp)
-                    )
+            Box(modifier = Modifier.height(280.dp)) {
+                LazyVerticalGrid(
+                    columns = GridCells.Adaptive(minSize = 80.dp),
+                    contentPadding = PaddingValues(vertical = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(avatars) { avatarResId ->
+                        Image(
+                            painter = painterResource(id = avatarResId),
+                            contentDescription = "Avatar Option",
+                            contentScale = ContentScale.Fit, // Corrected to Fit
+                            modifier = Modifier
+                                .size(72.dp)
+                                .clip(CircleShape)
+                                .clickable { onAvatarSelected(avatarResId) }
+                        )
+                    }
                 }
             }
         },
