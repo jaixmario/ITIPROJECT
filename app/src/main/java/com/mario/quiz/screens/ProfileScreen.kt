@@ -6,7 +6,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Box // The missing import
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -103,7 +103,7 @@ fun ProfileScreen(navController: NavController) {
             Image(
                 painter = painterResource(id = selectedAvatar),
                 contentDescription = "User Avatar",
-                contentScale = ContentScale.Fit, // Corrected to Fit
+                contentScale = ContentScale.Fit,
                 modifier = Modifier
                     .size(120.dp)
                     .clip(CircleShape)
@@ -149,6 +149,13 @@ fun ProfileScreen(navController: NavController) {
             }
 
             Spacer(modifier = Modifier.weight(1f))
+            
+            Text(
+                text = "Made by JAIDEEP from IT Trade",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+            )
+            Spacer(modifier = Modifier.height(16.dp))
 
             Button(onClick = {
                 with(sharedPreferences.edit()) {
@@ -184,7 +191,7 @@ fun AvatarPickerDialog(avatars: List<Int>, onDismiss: () -> Unit, onAvatarSelect
         onDismissRequest = onDismiss,
         title = { Text(text = "Choose Your Avatar") },
         text = {
-            Box(modifier = Modifier.height(280.dp)) {
+            Box(modifier = Modifier.height(280.dp)) { 
                 LazyVerticalGrid(
                     columns = GridCells.Adaptive(minSize = 80.dp),
                     contentPadding = PaddingValues(vertical = 8.dp),
@@ -195,7 +202,7 @@ fun AvatarPickerDialog(avatars: List<Int>, onDismiss: () -> Unit, onAvatarSelect
                         Image(
                             painter = painterResource(id = avatarResId),
                             contentDescription = "Avatar Option",
-                            contentScale = ContentScale.Fit, // Corrected to Fit
+                            contentScale = ContentScale.Fit,
                             modifier = Modifier
                                 .size(72.dp)
                                 .clip(CircleShape)
