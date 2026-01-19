@@ -13,5 +13,7 @@ data class UpdateInfo(
     @SerializedName("message")
     val message: String = "",
     @SerializedName("block")
-    val block: String = "FALSE" // Default to FALSE
+    val block: String = "FALSE", // Default to FALSE
+    @SerializedName("db_message")
+    val dbMessage: String = "" // New field for update notifications
 )
