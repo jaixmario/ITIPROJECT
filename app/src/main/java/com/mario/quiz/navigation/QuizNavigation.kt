@@ -7,6 +7,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.mario.quiz.screens.AddNameScreen
+import com.mario.quiz.screens.BlockedScreen
 import com.mario.quiz.screens.HistoryScreen
 import com.mario.quiz.screens.HomeScreen
 import com.mario.quiz.screens.ProfileScreen
@@ -49,5 +50,12 @@ fun QuizNavigation() {
         }
         composable("results") { HistoryScreen(navController = navController) }
         composable("profile") { ProfileScreen(navController = navController) }
+        composable(
+            route = "blocked?message={message}",
+            arguments = listOf(navArgument("message") { type = NavType.StringType; nullable = true })
+        ) { backStackEntry ->
+            val message = backStackEntry.arguments?.getString("message")
+            BlockedScreen(message = message)
+        }
     }
 }

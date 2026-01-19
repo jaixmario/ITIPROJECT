@@ -11,5 +11,7 @@ data class UpdateInfo(
     @SerializedName("version")
     val version: String = "",
     @SerializedName("message")
-    val message: String = ""
+    val message: String = "",
+    @SerializedName("block")
+    val block: String = "FALSE" // Default to FALSE
 )
