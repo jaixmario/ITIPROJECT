@@ -30,7 +30,8 @@ import com.google.gson.Gson
 import com.mario.quiz.R
 import com.mario.quiz.data.FirebaseManager
 import com.mario.quiz.data.LocalDataManager
-import com.mario.quiz.data.fetchUpdateInfo
+import com.mario.quiz.data.UpdateRepository
+import com.mario.quiz.data.isVersionNewer
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
@@ -40,14 +41,18 @@ fun SplashScreen(navController: NavController) {
     var setupMessage by remember { mutableStateOf("Loading...") }
 
     LaunchedEffect(Unit) {
-        val updateInfo = fetchUpdateInfo()
+        // Use the repository to get update info (handles offline caching)
+        val updateRepository = UpdateRepository(context)
+        val updateInfo = updateRepository.getUpdateInfo()
 
+        // 1. Check for app block first
         if (updateInfo != null && updateInfo.database.block.equals("TRUE", ignoreCase = true)) {
             val message = URLEncoder.encode(updateInfo.database.message, StandardCharsets.UTF_8.toString())
             navController.navigate("blocked?message=$message") { popUpTo("splash") { inclusive = true } }
-            return@LaunchedEffect // Stop further execution
+            return@LaunchedEffect // Stop all further execution
         }
 
+        // 2. Handle first-time database setup
         val localDataManager = LocalDataManager(context)
         val prefs = context.getSharedPreferences("quiz_app_prefs", Context.MODE_PRIVATE)
         val isFirstRun = !prefs.contains("database_initialized")
@@ -66,12 +71,14 @@ fun SplashScreen(navController: NavController) {
                 }
             }
         } else if (updateInfo != null) {
+            // 3. On subsequent runs, check for a new DB version and show message
             val localVersion = localDataManager.getDbVersion()
-            if (updateInfo.database.version != localVersion) {
-                Toast.makeText(context, updateInfo.database.message, Toast.LENGTH_LONG).show()
+            if (localVersion != null && isVersionNewer(updateInfo.database.version, localVersion)) {
+                Toast.makeText(context, updateInfo.database.dbMessage, Toast.LENGTH_LONG).show()
             }
         }
         
+        // 4. Proceed to the main app
         val userName = prefs.getString("user_name", null)
         if (userName.isNullOrBlank()) {
             navController.navigate("add_name") { popUpTo("splash") { inclusive = true } }
