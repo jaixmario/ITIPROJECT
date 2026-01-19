@@ -46,4 +46,18 @@ class LocalDataManager(context: Context) {
         val type = object : TypeToken<List<QuizResult>>() {}.type
         return gson.fromJson(json, type) ?: emptyList()
     }
+
+    fun saveUpdateInfo(updateInfo: DatabaseUpdate) {
+        val json = gson.toJson(updateInfo)
+        sharedPreferences.edit().putString("update_info_cache", json).apply()
+    }
+
+    fun getUpdateInfo(): DatabaseUpdate? {
+        val json = sharedPreferences.getString("update_info_cache", null)
+        return if (json != null) {
+            gson.fromJson(json, DatabaseUpdate::class.java)
+        } else {
+            null
+        }
+    }
 }
