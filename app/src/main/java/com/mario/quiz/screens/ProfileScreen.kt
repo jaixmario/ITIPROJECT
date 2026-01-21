@@ -151,7 +151,7 @@ fun ProfileScreen(navController: NavController) {
             Spacer(modifier = Modifier.weight(1f))
             
             Text(
-                text = "Made by JAIDEEP from IT Trade",
+                text = "Made by JAIDEEP From IT Trade",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
             )
